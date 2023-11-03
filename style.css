@@ -1,0 +1,5 @@
+#img2img_inpaint_difference_swap_images {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
