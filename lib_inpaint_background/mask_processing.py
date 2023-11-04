@@ -1,4 +1,5 @@
 import rembg
+import gradio as gr
 import numpy as np
 from PIL import Image
 
@@ -16,7 +17,7 @@ def compute_mask(
     BackgroundGlobals.base_image = base_img
 
     if base_img is None:
-        return None
+        return None, gr.update(visible=alpha_matting_enabled)
 
     mask = rembg.remove(
         base_img,
@@ -36,7 +37,7 @@ def compute_mask(
     if BackgroundGlobals.show_image_under_mask:
         visual_mask = add_image_under_mask(mask, visual_mask, np.array(base_img).astype(np.int32))
 
-    return Image.fromarray(visual_mask.astype(np.uint8), mode=BackgroundGlobals.base_image.mode)
+    return Image.fromarray(visual_mask.astype(np.uint8), mode=BackgroundGlobals.base_image.mode), gr.update(visible=alpha_matting_enabled)
 
 
 def colorize(mask):

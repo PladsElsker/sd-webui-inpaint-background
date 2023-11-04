@@ -22,7 +22,7 @@ def create_inpaint_background_tab():
 
 def inject_inpaint_background_generation_params_ui():
     with ParentBlock():
-        with gr.Tab(label='Rembg parameters') as inpaint_background_params:
+        with gr.Tab(label='Rembg parameters', visible=False) as inpaint_background_params:
             with FormRow():
                 model_dropdown = gr.Dropdown(choices=models, value="u2net", show_label=False)
                 alpha_matting = gr.Checkbox(label="Alpha matting", value=False)
@@ -31,12 +31,6 @@ def inject_inpaint_background_generation_params_ui():
                 alpha_matting_erode_size = gr.Slider(label="Erode size", minimum=0, maximum=40, step=1, value=10)
                 alpha_matting_foreground_threshold = gr.Slider(label="Foreground threshold", minimum=0, maximum=255, step=1, value=240)
                 alpha_matting_background_threshold = gr.Slider(label="Background threshold", minimum=0, maximum=255, step=1, value=10)
-
-            alpha_matting.change(
-                fn=lambda x: gr.update(visible=x),
-                inputs=[alpha_matting],
-                outputs=[alpha_mask_row],
-            )
 
     params = {
         'fn': compute_mask,
@@ -48,10 +42,18 @@ def inject_inpaint_background_generation_params_ui():
             alpha_matting_foreground_threshold,
             alpha_matting_background_threshold,
         ],
-        'outputs': [BackgroundGlobals.inpaint_mask_component]
+        'outputs': [
+            BackgroundGlobals.inpaint_mask_component,
+            alpha_mask_row
+        ]
     }
 
     BackgroundGlobals.inpaint_img_component.upload(**params)
     BackgroundGlobals.inpaint_img_component.clear(**params)
+    model_dropdown.change(**params)
+    alpha_matting.change(**params)
+    alpha_matting_erode_size.release(**params)
+    alpha_matting_foreground_threshold.release(**params)
+    alpha_matting_background_threshold.release(**params)
 
     BackgroundGlobals.ui_params = inpaint_background_params,

@@ -4,6 +4,7 @@ from lib_inpaint_background.webui_callbacks import setup_script_callbacks
 
 
 if BackgroundGlobals.is_extension_enabled:
-    hijack_img2img_processing()
+    # hijack_img2img_processing()
+    pass
 
-setup_script_callbacks()
+# setup_script_callbacks()
