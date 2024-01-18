@@ -1,9 +1,5 @@
-import functools
 import gradio as gr
-
 from modules import img2img
-
-from lib_inpaint_background.stack_ops import find_f_local_in_stack
 from lib_inpaint_background.globals import BackgroundGlobals
 
 
@@ -38,37 +34,3 @@ def hijack_img2img_processing():
             img2img_batch_png_info_props, img2img_batch_png_info_dir, request, *args)
 
     img2img.img2img = hijack_func
-
-
-def hijack_generation_params_ui():
-    img2img_tabs = find_f_local_in_stack('img2img_tabs')
-    for i, tab in enumerate(img2img_tabs):
-        def hijack_select(*args, tab_index, original_select, **kwargs):
-            fn = kwargs.get('fn')
-            inputs = kwargs.get('inputs')
-            outputs = kwargs.get('outputs')
-            outputs.extend(BackgroundGlobals.ui_params)
-
-            def hijack_select_img2img_tab(original_fn):
-                nonlocal tab_index
-                updates = list(original_fn())
-                if tab_index == BackgroundGlobals.tab_index:
-                    updates[0] = gr.update(visible=True)
-
-                new_updates_state = gr.update(visible=tab_index == BackgroundGlobals.tab_index)
-                new_updates = [new_updates_state] * len(BackgroundGlobals.ui_params)
-                return *updates, *new_updates
-
-            fn = functools.partial(hijack_select_img2img_tab, original_fn=fn)
-            original_select(fn=fn, inputs=inputs, outputs=outputs)
-
-        tab.select = functools.partial(hijack_select, tab_index=i, original_select=tab.select)
-
-
-def register_tabitem_to_tab_list():
-    img2img_tabs = find_f_local_in_stack('img2img_tabs')
-    img2img_selected_tab = find_f_local_in_stack('img2img_selected_tab')
-
-    img2img_tabs.append(BackgroundGlobals.img2img_tab)
-    BackgroundGlobals.tab_index = len(img2img_tabs)-1
-    BackgroundGlobals.img2img_tab.select(fn=lambda tabnum=BackgroundGlobals.tab_index: tabnum, inputs=[], outputs=[img2img_selected_tab])
