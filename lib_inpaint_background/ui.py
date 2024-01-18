@@ -40,13 +40,7 @@ class InpaintBackgroundTab:
 
     def gradio_events(self, img2img_tabs: list):
         self._compute_mask_and_alpha_matting_params()
-
-        for i, tab in enumerate(img2img_tabs):
-            tab.select(
-                fn=lambda is_shown: gr.update(visible=is_shown),
-                inputs=[gr.State(i == self.tab_index)],
-                outputs=[self.ui_params]
-            )
+        self._additional_params_visibility(img2img_tabs)
 
     def _compute_mask_and_alpha_matting_params(self):
         params = {
@@ -73,3 +67,10 @@ class InpaintBackgroundTab:
         self.alpha_matting_foreground_threshold.release(**params)
         self.alpha_matting_background_threshold.release(**params)
 
+    def _additional_params_visibility(self, img2img_tabs):
+        for i, tab in enumerate(img2img_tabs):
+            tab.select(
+                fn=lambda is_shown: gr.update(visible=is_shown),
+                inputs=[gr.State(i == self.tab_index)],
+                outputs=[self.ui_params]
+            )
