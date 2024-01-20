@@ -9,7 +9,7 @@ def create_settings_section():
 
     opts.add_option('inpaint_background_enabled', OptionInfo(True, 'Enable inpaint-background extension', section=section).needs_restart())
     opts.add_option('inpaint_background_show_image_under_mask', OptionInfo(True, 'Display the altered image under the mask', section=section))
-    opts.add_option('inpaint_background_mask_brush_color', OptionInfo('#ffffff', 'Inpaint background brush color', ui_components.FormColorPicker, {}, section=section).info('brush color of inpaint difference mask'))
+    opts.add_option('inpaint_background_mask_brush_color', OptionInfo('#ffffff', 'Inpaint background brush color', ui_components.FormColorPicker, {}, section=section).info('brush color of inpaint background mask'))
 
     update_global_settings()
 
