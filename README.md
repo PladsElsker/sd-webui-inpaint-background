@@ -3,11 +3,11 @@
 A1111 extension that adds a new operation mode in the `img2img` tab. It finds a background mask using rembg.  
 
 ## Installation
-1) Go to Extensions > Available
-2) Click the `Load from:` button
-3) Enter "inpaint background" in the search bar
-4) Click the `Install` button of the "inpaint background" Tab cell
-5) Restart the webui
+- Go to Extensions > Available
+- Click the `Load from:` button
+- Enter "inpaint background" in the search bar
+- Click the `Install` button of the "inpaint background" Tab cell
+- Restart the webui
 
 ## Usage
 - Go to `img2img` -> `Generation` -> `Inpaint background`
