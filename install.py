@@ -1,9 +1,17 @@
 import launch
 
 
+if not launch.is_installed('onnxruntime') and not launch.is_installed('onnxruntime-gpu'):
+    # with older versions of a webui you need to check for both cpu and gpu onnxruntime otherwise it will fail to detect it properly
+    import torch.cuda as cuda
+    # torch imported here only when necessary, importing it at the beginning would immediately slow down load time
+    if cuda.is_available():
+        launch.run_pip('install onnxruntime-gpu')
+    else:
+        launch.run_pip('install onnxruntime')
+
 pip_dependencies = [
     'rembg==2.0.38 --no-deps',
-    'onnxruntime',
     'pymatting',
     'pooch'
 ]
