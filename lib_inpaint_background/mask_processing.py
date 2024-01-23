@@ -23,7 +23,7 @@ def compute_mask(
 
     if BackgroundGlobals.rembg_model_string != model_str:
         BackgroundGlobals.rembg_model_string = model_str
-        BackgroundGlobals.rembg_session = rembg.new_session(model_str)
+        BackgroundGlobals.rembg_session = rembg.new_session(model_str, providers=['CPUExecutionProvider'])
 
     mask = rembg.remove(
         base_img,
