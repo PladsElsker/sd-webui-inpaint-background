@@ -1,8 +1,10 @@
 import gradio as gr
 from modules import img2img
 from lib_inpaint_background.globals import BackgroundGlobals
+from lib_inpaint_background.one_time_callable import one_time_callable
 
 
+@one_time_callable
 def hijack_img2img_processing():
     original_img2img_processing = img2img.img2img
 
