@@ -4,6 +4,8 @@ import numpy as np
 import cv2
 from PIL import Image
 
+from modules.paths_internal import models_path
+
 from lib_inpaint_background.globals import BackgroundGlobals
 
 
@@ -24,7 +26,7 @@ def compute_mask(
     if BackgroundGlobals.rembg_model_string != model_str:
         BackgroundGlobals.rembg_model_string = model_str
         BackgroundGlobals.rembg_session = rembg.new_session(model_str, providers=['CPUExecutionProvider'])
-
+    
     mask = rembg.remove(
         base_img,
         session=BackgroundGlobals.rembg_session,
