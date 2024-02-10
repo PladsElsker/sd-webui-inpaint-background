@@ -14,7 +14,7 @@ def create_settings_section():
     section = ('inpaint_background', 'Inpaint Background')
 
     opts.add_option('inpaint_background_enabled', OptionInfo(True, 'Enable inpaint-background extension', section=section).needs_restart())
-    opts.add_option('inpaint_background_u2net_location', OptionInfo(U2NET_DEFAULT_LOCATION, 'Rembg models location', gr.Textbox, {'placeholder': U2NET_DEFAULT_LOCATION}, section=section))
+    opts.add_option('inpaint_background_u2net_location', OptionInfo('', 'Rembg models location', gr.Textbox, {'placeholder': U2NET_DEFAULT_LOCATION}, section=section))
     opts.add_option('inpaint_background_show_image_under_mask', OptionInfo(True, 'Display the altered image under the mask', section=section))
     opts.add_option('inpaint_background_mask_brush_color', OptionInfo('#ffffff', 'Inpaint background brush color', ui_components.FormColorPicker, {}, section=section).info('brush color of inpaint background mask'))
     update_global_settings()
@@ -27,8 +27,11 @@ def update_global_settings():
     BackgroundGlobals.mask_brush_color = opts.data.get('inpaint_background_mask_brush_color', '#ffffff')
 
     def u2net_location_color_changed():
-        new_location = opts.data.get('inpaint_background_u2net_location', U2NET_DEFAULT_LOCATION)
-        os.environ["U2NET_HOME"] = new_location if len(new_location) > 0 else U2NET_DEFAULT_LOCATION
+        new_location = opts.data.get('inpaint_background_u2net_location', '')
+        if new_location:
+            os.environ["U2NET_HOME"] = new_location
+        else:
+            os.environ.pop("U2NET_HOME", None)
 
     def image_under_mask_visibility_changed():
         BackgroundGlobals.show_image_under_mask = opts.data.get('inpaint_background_show_image_under_mask', True)
