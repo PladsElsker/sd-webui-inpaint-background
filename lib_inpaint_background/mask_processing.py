@@ -4,9 +4,10 @@ import numpy as np
 import cv2
 from PIL import Image
 
-from modules.paths_internal import models_path
-
 from lib_inpaint_background.globals import BackgroundGlobals
+
+
+
 
 
 def compute_mask(
@@ -23,21 +24,15 @@ def compute_mask(
     if base_img is None:
         return None, gr.update(visible=alpha_matting_enabled)
 
-    if BackgroundGlobals.rembg_model_string != model_str:
-        BackgroundGlobals.rembg_model_string = model_str
-        BackgroundGlobals.rembg_session = rembg.new_session(model_str, providers=['CPUExecutionProvider'])
-    
-    mask = rembg.remove(
-        base_img,
-        session=BackgroundGlobals.rembg_session,
-        only_mask=True,
+    base_img = np.array(base_img)
+
+    mask = compute_mask_rembg(
+        base_img, model_str,
         alpha_matting=alpha_matting_enabled,
         alpha_matting_foreground_threshold=alpha_matting_foreground_threshold,
         alpha_matting_background_threshold=alpha_matting_background_threshold,
         alpha_matting_erode_size=alpha_matting_erode_size,
     )
-    mask = 255 - np.array(mask)
-    mask = np.stack((mask, mask, mask), axis=-1)
 
     BackgroundGlobals.generated_mask = Image.fromarray(mask)
 
@@ -55,12 +50,32 @@ def compute_mask_blur_only(
 ):
     mask = BackgroundGlobals.generated_mask
 
+    if mask is None:
+        return None
+
     blurred_mask = blur(mask, img2img_mask_blur)
     visual_mask = colorize(blurred_mask)
     if BackgroundGlobals.show_image_under_mask:
         visual_mask = add_image_under_mask(blurred_mask, visual_mask, np.array(base_img).astype(np.int32))
 
     return Image.fromarray(visual_mask.astype(np.uint8), mode=BackgroundGlobals.base_image.mode)
+
+
+def compute_mask_rembg(base_img, model_str, **kwargs):
+    if model_str == "None":
+        BackgroundGlobals.rembg_model_string = model_str
+        BackgroundGlobals.rembg_session = None
+        return np.zeros_like(base_img)
+    
+    if BackgroundGlobals.rembg_model_string != model_str:
+        BackgroundGlobals.rembg_model_string = model_str
+        BackgroundGlobals.rembg_session = rembg.new_session(model_str, providers=['CPUExecutionProvider'])
+    
+    kwargs["session"] = BackgroundGlobals.rembg_session
+
+    mask = np.array(rembg.remove(Image.fromarray(base_img), **kwargs).getchannel("A"))
+    mask = 255 - mask
+    return np.stack((mask, mask, mask), axis=-1)
 
 
 def colorize(mask):
