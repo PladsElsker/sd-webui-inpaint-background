@@ -3,7 +3,6 @@ import gradio as gr
 from modules.shared import opts
 from modules.ui_components import FormRow
 
-from lib_inpaint_background.globals import BackgroundGlobals
 from lib_inpaint_background.model_choices import models
 from lib_inpaint_background.mask_processing import compute_mask, compute_mask_blur_only
 
@@ -11,10 +10,10 @@ from lib_inpaint_background.mask_processing import compute_mask, compute_mask_bl
 class InpaintBackgroundTab:
     requested_elem_ids = ["img2img_mask_blur"]
 
-    def __init__(self, tab_index: int):
-        self.tab_index = tab_index
-        BackgroundGlobals.tab_index = tab_index
-
+    def __init__(self):
+        self.inpaint_img_component = None
+        self.inpaint_mask_component = None
+        self.inpaint_visual_mask_component = None
         self.alpha_mask_row = None
         self.model_dropdown = None
         self.alpha_matting = None
@@ -22,12 +21,18 @@ class InpaintBackgroundTab:
         self.alpha_matting_foreground_threshold = None
         self.alpha_matting_background_threshold = None
 
+    def image_components(self):
+        self.inpaint_img_component = gr.Image(label="Base image", source="upload", interactive=True, type="pil", elem_id="img_inpaint_background")
+        self.inpaint_img_component.unrender()
+        self.inpaint_mask_component = gr.Image(visible=False, label="Altered image", interactive=True, type="pil", elem_id="mask_inpaint_background")
+        return self.inpaint_img_component, self.inpaint_mask_component
+
     def tab(self):
         with gr.TabItem('Inpaint background', id='inpaint_background', elem_id="img2img_inpaint_background_tab") as self.tab:
             with gr.Row():
-                BackgroundGlobals.inpaint_img_component = gr.Image(label="Base image", source="upload", interactive=True, type="pil", elem_id="img_inpaint_background")
-
-            BackgroundGlobals.inpaint_mask_component = gr.Image(label="Background mask", interactive=False, type="pil", elem_id="mask_inpaint_background", tool="sketch", height=opts.img2img_editor_height, brush_color=opts.img2img_inpaint_mask_brush_color)
+                self.inpaint_img_component.render()
+            
+            self.inpaint_visual_mask_component = gr.Image(label="Background mask", interactive=False, type="pil", elem_id="mask_inpaint_background", tool="sketch", height=opts.img2img_editor_height, brush_color=opts.img2img_inpaint_mask_brush_color)
 
     def section(self, components):
         self.img2img_mask_blur = components["img2img_mask_blur"]
@@ -42,16 +47,16 @@ class InpaintBackgroundTab:
                 self.alpha_matting_foreground_threshold = gr.Slider(label="Foreground threshold", minimum=0, maximum=255, step=1, value=240)
                 self.alpha_matting_background_threshold = gr.Slider(label="Background threshold", minimum=0, maximum=255, step=1, value=10)
 
-    def gradio_events(self, img2img_tabs: list):
+    def gradio_events(self, selected: gr.Checkbox):
         self._compute_mask_and_alpha_matting_params()
         self._compute_mask_blur_only()
-        self._additional_params_visibility(img2img_tabs)
+        self._additional_params_visibility(selected)
 
     def _compute_mask_and_alpha_matting_params(self):
         params = dict(
             fn=compute_mask,
             inputs=[
-                BackgroundGlobals.inpaint_img_component,
+                self.inpaint_img_component,
                 self.model_dropdown,
                 self.alpha_matting,
                 self.alpha_matting_erode_size,
@@ -60,13 +65,14 @@ class InpaintBackgroundTab:
                 self.img2img_mask_blur,
             ],
             outputs=[
-                BackgroundGlobals.inpaint_mask_component,
+                self.inpaint_mask_component,
+                self.inpaint_visual_mask_component,
                 self.alpha_mask_row,
             ],
         )
 
-        BackgroundGlobals.inpaint_img_component.upload(**params)
-        BackgroundGlobals.inpaint_img_component.clear(**params)
+        self.inpaint_img_component.upload(**params)
+        self.inpaint_img_component.clear(**params)
         self.model_dropdown.change(**params)
         self.alpha_matting.change(**params)
         self.alpha_matting_erode_size.release(**params)
@@ -77,20 +83,19 @@ class InpaintBackgroundTab:
         params = dict(
             fn=compute_mask_blur_only,
             inputs=[
-                BackgroundGlobals.inpaint_img_component, 
+                self.inpaint_img_component, 
                 self.img2img_mask_blur,
             ],
             outputs=[
-                BackgroundGlobals.inpaint_mask_component,
+                self.inpaint_visual_mask_component,
             ],
         )
 
         self.img2img_mask_blur.release(**params)
 
-    def _additional_params_visibility(self, img2img_tabs):
-        for i, tab in enumerate(img2img_tabs):
-            tab.select(
-                fn=lambda is_shown: gr.update(visible=is_shown),
-                inputs=[gr.State(i == self.tab_index)],
-                outputs=[self.ui_params]
-            )
+    def _additional_params_visibility(self, selected: gr.Checkbox):
+        selected.change(
+            fn=lambda is_shown: gr.update(visible=is_shown),
+            inputs=[selected],
+            outputs=[self.ui_params]
+        )

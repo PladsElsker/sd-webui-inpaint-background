@@ -7,11 +7,8 @@ from PIL import Image
 from lib_inpaint_background.globals import BackgroundGlobals
 
 
-
-
-
 def compute_mask(
-    base_img,
+    base_img_pil,
     model_str,
     alpha_matting_enabled,
     alpha_matting_erode_size,
@@ -19,12 +16,10 @@ def compute_mask(
     alpha_matting_background_threshold,
     img2img_mask_blur,
 ):
-    BackgroundGlobals.base_image = base_img
+    if base_img_pil is None:
+        return None, None, gr.update(visible=alpha_matting_enabled)
 
-    if base_img is None:
-        return None, gr.update(visible=alpha_matting_enabled)
-
-    base_img = np.array(base_img)
+    base_img = np.array(base_img_pil)
 
     mask = compute_mask_rembg(
         base_img, model_str,
@@ -34,14 +29,12 @@ def compute_mask(
         alpha_matting_erode_size=alpha_matting_erode_size,
     )
 
-    BackgroundGlobals.generated_mask = Image.fromarray(mask)
-
     blurred_mask = blur(mask, img2img_mask_blur)
     visual_mask = colorize(blurred_mask)
     if BackgroundGlobals.show_image_under_mask:
         visual_mask = add_image_under_mask(blurred_mask, visual_mask, np.array(base_img).astype(np.int32))
 
-    return Image.fromarray(visual_mask.astype(np.uint8), mode=BackgroundGlobals.base_image.mode), gr.update(visible=alpha_matting_enabled)
+    return Image.fromarray(mask.astype(np.uint8), mode=base_img_pil.mode), Image.fromarray(visual_mask.astype(np.uint8), mode=base_img_pil.mode), gr.update(visible=alpha_matting_enabled)
 
 
 def compute_mask_blur_only(
