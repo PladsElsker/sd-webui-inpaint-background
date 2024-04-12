@@ -26,7 +26,7 @@ for dependency in pip_dependencies:
         launch.run_pip(f"install {dependency}", f"{dependency} for sd-webui-inpaint-background")
 
 
-minimum_sdwi2iextender_version = "0.1.1"
+minimum_sdwi2iextender_version = "0.1.2"
 if not launch.is_installed('sdwi2iextender'):
     launch.run_pip(f'install sdwi2iextender', f"sdwi2iextender for sd-webui-inpaint-difference")
 else:
