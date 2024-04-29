@@ -12,7 +12,7 @@ if not launch.is_installed('onnxruntime') and not launch.is_installed('onnxrunti
         launch.run_pip('install onnxruntime')
 
 pip_dependencies = [
-    'rembg==2.0.38 --no-deps',
+    'rembg==2.0.56 --no-deps',
     'pymatting',
     'pooch'
 ]
