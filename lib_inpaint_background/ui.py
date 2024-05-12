@@ -1,4 +1,5 @@
 import gradio as gr
+from sdwi2iextender import OperationMode
 
 from modules.shared import opts
 from modules.ui_components import FormRow
@@ -7,7 +8,7 @@ from lib_inpaint_background.model_choices import models
 from lib_inpaint_background.mask_processing import compute_mask, compute_mask_blur_only
 
 
-class InpaintBackgroundTab:
+class InpaintBackgroundTab(OperationMode):
     requested_elem_ids = ["img2img_mask_blur"]
 
     def __init__(self):
@@ -83,7 +84,8 @@ class InpaintBackgroundTab:
         params = dict(
             fn=compute_mask_blur_only,
             inputs=[
-                self.inpaint_img_component, 
+                self.inpaint_img_component,
+                self.inpaint_mask_component,
                 self.img2img_mask_blur,
             ],
             outputs=[
