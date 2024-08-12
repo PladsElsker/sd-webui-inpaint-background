@@ -33,3 +33,7 @@ else:
     current_version = pkg_resources.get_distribution("sdwi2iextender").version
     if pkg_resources.parse_version(current_version) < pkg_resources.parse_version(minimum_sdwi2iextender_version):
         launch.run_pip(f'install sdwi2iextender=={minimum_sdwi2iextender_version}', f"sdwi2iextender=={minimum_sdwi2iextender_version} for sd-webui-inpaint-background")
+
+
+from sdwi2iextender import sdwi2iextender_version_manager
+sdwi2iextender_version_manager.ensure_latest()
